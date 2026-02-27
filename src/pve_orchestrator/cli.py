@@ -2,6 +2,17 @@
 
 from __future__ import annotations
 
+import os
+import sys
+
+# Fix Windows encoding for rich output
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -10,7 +21,7 @@ app = typer.Typer(
     name="pve-orch",
     help="AI-native cluster orchestration for Proxmox VE",
 )
-console = Console()
+console = Console(force_terminal=True)
 
 
 @app.command()
