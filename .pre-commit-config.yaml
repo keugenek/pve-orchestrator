@@ -1,0 +1,63 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+  - repo: local
+    hooks:
+      - id: no-private-ips
+        name: Check for private IPs
+        entry: python -c "
+import re, sys
+patterns = [
+    r'192\.168\.\d+\.\d+',
+    r'10\.\d+\.\d+\.\d+',
+    r'172\.(1[6-9]|2\d|3[01])\.\d+\.\d+',
+]
+ok = True
+for f in sys.argv[1:]:
+    try:
+        for i, line in enumerate(open(f, encoding='utf-8', errors='ignore'), 1):
+            if any(re.search(p, line) for p in patterns):
+                if 'example' not in line.lower() and '10.0.0.' not in line:
+                    print(f'{f}:{i}: Private IP found: {line.strip()[:80]}')
+                    ok = False
+    except: pass
+sys.exit(0 if ok else 1)
+"
+        language: python
+        types: [text]
+        exclude: '(\.secrets\.baseline|cluster\.yaml)$'
+
+      - id: no-passwords
+        name: Check for passwords/secrets patterns
+        entry: python -c "
+import re, sys
+patterns = [
+    r'(?i)(password|passwd|pwd)\s*[:=]\s*[\"''].+[\"'']',
+    r'(?i)(api[_-]?key|token|secret)\s*[:=]\s*[\"''][a-zA-Z0-9]{16,}[\"'']',
+    r'(?i)(mac[_-]?address|wol[_-]?mac)\s*[:=]\s*[\"''][0-9a-fA-F:]{17}[\"'']',
+]
+ok = True
+for f in sys.argv[1:]:
+    try:
+        for i, line in enumerate(open(f, encoding='utf-8', errors='ignore'), 1):
+            for p in patterns:
+                if re.search(p, line):
+                    print(f'{f}:{i}: Possible secret: {line.strip()[:80]}')
+                    ok = False
+    except: pass
+sys.exit(0 if ok else 1)
+"
+        language: python
+        types: [text]
+        exclude: '(\.secrets\.baseline|cluster\.yaml|\.pre-commit-config\.yaml)$'
