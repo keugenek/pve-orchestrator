@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pve-orchestrator"
+version = "0.1.0"
+description = "AI-native cluster orchestration for Proxmox VE"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "Evgenii Knyazev", email = "keugenek@gmail.com" },
+]
+keywords = ["proxmox", "orchestration", "ai", "gpu", "cluster", "inference"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Clustering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "proxmoxer>=2.0",
+    "requests>=2.28",
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "typer>=0.9",
+]
+
+[project.optional-dependencies]
+nvidia = ["nvidia-ml-py>=12.0"]
+dev = ["pytest", "pytest-asyncio", "ruff", "mypy"]
+
+[project.scripts]
+pve-orch = "pve_orchestrator.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/keugenek/pve-orchestrator"
+Repository = "https://github.com/keugenek/pve-orchestrator"
+Issues = "https://github.com/keugenek/pve-orchestrator/issues"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B"]
