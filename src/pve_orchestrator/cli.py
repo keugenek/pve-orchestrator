@@ -51,9 +51,8 @@ def nodes():
     table.add_column("Capabilities")
 
     # TODO: populate from cluster state
-    table.add_row("brian", "🟢 online", "3× RTX 3090", "12%", "llm, img-gen, training")
-    table.add_row("pve3", "🟢 online", "—", "—", "storage, preprocess")
-    table.add_row("edge-tt", "🔴 offline", "1× Wormhole", "—", "stt, embeddings")
+    console.print("[yellow]⚠ No cluster configured. Run pve-orch init first.[/yellow]")
+    return
 
     console.print(table)
 

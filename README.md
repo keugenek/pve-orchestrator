@@ -31,8 +31,8 @@ PVE Orchestrator is an **agent-driven workload orchestrator** built on top of Pr
 │              Proxmox VE API Layer                │
 │  Nodes │ VMs │ CTs │ Storage │ Network │ GPU    │
 ├────────┼──────┼─────┼─────────┼─────────┼───────┤
-│ Node 1 │Node 2│Node3│  NAS    │Tailscale│  ...  │
-│ 3×3090 │ TT   │ CPU │  14TB   │ Overlay │       │
+│ Node 1 │Node 2│Node3│  NAS    │ VPN/LAN │  ...  │
+│ GPUs   │ Accel│ CPU │  HDD    │ Overlay │       │
 └────────┴──────┴─────┴─────────┴─────────┴───────┘
 ```
 
@@ -70,46 +70,44 @@ pve-orchestrator/
 
 ```yaml
 cluster:
-  name: homelab
+  name: my-cluster
   proxmox:
-    host: 192.168.0.2
+    host: pve.local        # Your Proxmox host
     user: root@pam
     token_name: orchestrator
     token_value: <secret>
 
 nodes:
-  brian:
-    host: 192.168.0.183
+  gpu-worker-1:
+    host: 10.0.0.10
     type: gpu-worker
     accelerators:
       - type: nvidia
-        model: RTX 3090
-        count: 3
+        model: RTX 4090
+        count: 2
         vram_gb: 24
     capabilities:
       - llm-inference
       - image-generation
-      - video-generation
       - training
     services:
       vllm:
         port: 8000
-        models: [llama-3.3-70b, qwen-2.5-32b]
+        models: [llama-3.1-70b]
 
-  pve3:
-    host: 192.168.0.103
+  storage-node:
+    host: 10.0.0.20
     type: storage-compute
     storage:
-      - path: /mnt/nas
-        size_tb: 14
+      - path: /mnt/data
+        size_tb: 8
         type: hdd
     capabilities:
       - storage
       - preprocessing
-      - lightweight-inference
 
-  edge-tt:
-    host: 192.168.0.xxx
+  edge-accelerator:
+    host: 10.0.0.30
     type: accelerator
     accelerators:
       - type: tenstorrent
@@ -218,7 +216,7 @@ Unlike K8s-based solutions, we leverage what Proxmox already does well:
 pip install pve-orchestrator
 
 # Configure cluster
-pve-orch init --proxmox-host 192.168.0.2
+pve-orch init --proxmox-host pve.local
 
 # Discover hardware
 pve-orch discover
